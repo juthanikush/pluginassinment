@@ -53,17 +53,6 @@ function create_posttype() {
 
 register_post_type( 'book',$args);
 
-// CPT Options
-// array(
-//   'labels' => array(
-//    'name' => __( 'book' ),
-//    'singular_name' => __( 'Book' )
-//   ),
-//   'public' => true,
-//   'has_archive' => false,
-//   'rewrite' => array('slug' => 'book'),
-//  )
-// );
+
 }
-// Hooking up our function to theme setup
 add_action( 'init', 'create_posttype' );
