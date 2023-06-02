@@ -89,3 +89,34 @@ function awesome_custome_taxonomies(){
     ));
 }
 add_action('init','awesome_custome_taxonomies');
+
+//add meta box
+
+function meta_callback_function($post){
+    
+    include plugin_dir_path(__FILE__).'form.php';
+ 
+}
+
+function book_save($post_id){
+    $fields_list=[
+        'author',
+        'price',
+        'publisher',
+        'year',
+        'edition',
+        'url'
+    ];
+    foreach($fields_list as $field){
+        if(array_key_exists($field,$_POST)){
+            update_post_meta($post_id,$field,sanitize_text_field($_POST[$field]));
+        }
+    }
+}
+add_action('save_post','book_save');
+
+function book_add_meta_box(){
+    add_meta_box("owt-cpt-id","CPT Book Metabox","meta_callback_function","book","normal","high");
+}
+
+add_action("add_meta_boxes","book_add_meta_box");
