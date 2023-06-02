@@ -5,7 +5,7 @@
 
 * Plugin URI: managewp.com/blog
 
-* Description: A plugin to create a custom post type for Books
+* Description: A plugin to create a custom post Field for Books
 
 * Version:  1.0
 
@@ -16,7 +16,7 @@
 * License:  GPL2
 
 */
-function create_posttype() {
+function create_postField() {
 
     $labels=array(
         'name'=>'Books',
@@ -43,7 +43,7 @@ function create_posttype() {
         'show_in_menu'=>true,
         'query_var'=>true,
         'rewrite'=>array('slug'=>'book'),
-        'capability_type'=>'post',
+        'capability_Field'=>'post',
         'has_archive'=>true,
         'hierarchical'=>false,
         'menu_position'=>null,
@@ -54,22 +54,22 @@ function create_posttype() {
 
  register_post_type( 'book',$args);
  }
-add_action( 'init', 'create_posttype' );
+add_action( 'init', 'create_postField' );
 
 function awesome_custome_taxonomies(){
     //add new taxonomy hierarchical
     $labels=array(
-        'name'=>'Types',
-        'singular_name'=>'Type',
-        'search_items'=>'Search Types',
-        'all_items'=>'All Types',
-        'parent_item'=>'Parent Type',
-        'parent_item_colon'=>'Parent Type',
-        'edit_item'=>'Edit Type',
-        'update_item'=>'Update Type',
-        'add_new_item'=>'Add New Type',
+        'name'=>'Fields',
+        'singular_name'=>'Field',
+        'search_items'=>'Search Fields',
+        'all_items'=>'All Fields',
+        'parent_item'=>'Parent Field',
+        'parent_item_colon'=>'Parent Field',
+        'edit_item'=>'Edit Field',
+        'update_item'=>'Update Field',
+        'add_new_item'=>'Add New Field',
         'new_item_name'=>'New Item Name',
-        'menu_name'=>'Type'
+        'menu_name'=>'Field'
     );
 
     $args=array(
@@ -78,8 +78,14 @@ function awesome_custome_taxonomies(){
         'show_ui'=>true,
         'show_admin_column'=>true,
         'query_var'=>true,
-        'rewrite'=>array('slug'=>'type')
+        'rewrite'=>array('slug'=>'Field')
     );
-    register_taxonomy('type',array('book'),$args);
+    register_taxonomy('Field',array('book'),$args);
+    //add the taxonomy Not hierarchical
+    register_taxonomy('Software','book',array(
+        'label'=>'Software',
+        'rewrite'=>array('slug'=>'Field'),
+        'hierarchical'=>false
+    ));
 }
 add_action('init','awesome_custome_taxonomies');
