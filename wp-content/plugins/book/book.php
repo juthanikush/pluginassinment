@@ -120,3 +120,165 @@ function book_add_meta_box(){
 }
 
 add_action("add_meta_boxes","book_add_meta_box");
+
+// function pd101_render_admin(){
+
+// }
+
+// function setting_add_menu_page(){
+//     add_menu_page('Admin Books Settings','Setting Books','edit_pages','book_setting','pd101_render_admin',false,62);
+    
+// }
+// add_action('admin_menu','setting_add_menu_page');
+
+
+function books_add_admin_menu(){
+    add_submenu_page(
+        'edit.php?post_type=book',
+        'Book Settings',
+        'Settings',
+        'manage_options',
+        'books_settings',
+        'books_settings_page'
+    );
+}
+add_action('admin_menu','books_add_admin_menu');
+
+function books_admin_init(){
+    add_settings_section(
+        'books_general_settings',
+        'General Settings',
+        'books_general_settings_callback',
+        'books_settings'
+    );
+
+    add_settings_field(
+        'books_currency',
+        'Currency',
+        'books_currency_field_callback',
+        'books_settings',
+        'books_general_settings',
+        ['label_for'=>'books_currency']
+    );
+
+ 
+    add_settings_field(
+        'books_per_page',
+        'Books Per Page',
+        'books_per_page_field_callback',
+        'books_settings',
+        'books_general_settings',
+        ['label_for'=>'books_currency']
+    );
+
+    register_setting('books_settings','books_currency');
+    register_setting('books_settings','books_per_page');
+}
+add_action('admin_init','books_admin_init');
+
+function books_settings_page(){
+    ?>
+    <div class="wrap">
+        <h1>Book Settings</h1>
+        <form method="post" action="options.php">
+            <?php settings_fields('books_settings'); ?>
+            <?php do_settings_sections('books_settings'); ?>
+            <?php submit_button(); ?>
+        </form>
+    </div>
+    <?php
+}
+
+function books_general_settings_callback(){
+    echo 'Configure general settings for books.';
+}
+
+function books_currency_field_callback(){
+    $currency = get_option('books_currency', 'USD');
+    echo '<input type="text" name="books_currency" value="' . esc_attr($currency) . '" class="regular-text" />';
+}
+
+function books_per_page_field_callback(){
+    $books_per_page=get_option('books_per_page',10);
+    echo '<input type="number" name="books_per_page" value="' . esc_attr($books_per_page) . '" class="regular-text" />';
+}
+
+function book_shortcode($atts){
+    $atts=shortcode_atts(array(
+        'id'=>'',
+        'author_name'=>'',
+        'year'=>'',
+        'category'=>'',
+        'tag'=>'',
+        'publisher'=>''
+    ),$atts);
+
+    $args=array(
+        'post_type'=>'book',
+        'posts_per_page'=>-1
+    );
+
+    if(!empty($atts['id'])){
+        $args['p']=$atts['id'];
+    }
+
+    if(!empty($atts['author_name'])){
+        $args['meta_query'][]=array(
+            'key'=>'author_name',
+            'value'=>$atts['author_name'],
+            'compare'=>'=',
+        );
+    }
+
+    if(!empty($atts['year'])){
+        $args['meta_query'][]=array(
+            'key'=>'year',
+            'value'=>$atts['year'],
+            'compare'=>'=',
+        );
+    }
+
+    if(!empty($atts['category'])){
+        $args['meta_query'][]=array(
+            'key'=>'category',
+            'value'=>$atts['category'],
+            'compare'=>'=',
+        );
+    }
+
+    if(!empty($atts['tag'])){
+        $args['meta_query'][]=array(
+            'key'=>'tag',
+            'value'=>$atts['tag'],
+            'compare'=>'=',
+        );
+    }
+
+    if(!empty($atts['publisher'])){
+        $args['meta_query'][]=array(
+            'key'=>'publisher',
+            'value'=>$atts['publisher'],
+            'compare'=>'=',
+        );
+    }
+
+
+    $query=new WP_Query($args);
+
+    if($query->have_posts()){
+        $output='<ul>';
+        while($query->have_posts()){
+            $query->the_post();
+            $output.='<li>'.get_the_title().'</li>';
+        }
+        $output.='</ul>';
+    }
+    else{
+        $output = 'No Books found';
+    }
+
+    wp_reset_postdata();
+    return $output;
+}
+
+add_shortcode('book','book_shortcode');
