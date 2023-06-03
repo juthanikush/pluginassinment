@@ -282,3 +282,103 @@ function book_shortcode($atts){
 }
 
 add_shortcode('book','book_shortcode');
+
+class Books_Category_Widget extends WP_Widget{
+    public function __construct(){
+        parent::__construct(
+            'books_category_widget',
+            'Books Category Widget',
+            array(
+                'description'=>'Display books of a selected Category'
+            )
+        );
+    }
+
+    public function widget($args,$instance){
+        $category=$instance['category'];
+
+        $query_args=array(
+            'post_type'=>'book',
+            'posts_per_page'=>5,
+            'tax_query'=>array(
+                array(
+                    'taxonomy'=>'book_category',
+                    'field'=>'slug',
+                    'terms'=>$category
+                )
+            )
+        );
+
+        $books_query=new WP_Query($query_args);
+
+        echo $args['before_widget'];
+
+        if(!empty($category)){
+            echo $args['before_title'].'Books in '.$category.$args['after_title'];
+        }
+
+        if($books_query->have_posts()){
+            echo '<ul>';
+            while($books_query->have_poosts()){
+                echo '<li>'.get_the_title().'</li>';
+            }
+            echo '</ul>';
+        }else{
+            echo 'No Books found.';
+        }
+        wp_reset_postdata();
+        echo $args['after_widget'];
+    }
+    public function form($instance){
+        $category =!empty($instance['category']) ? $instance['category'] :'';
+        ?>
+        <p>
+            <label for="<?php echo $this->gegt_field_id('category');?>">Category:</label>
+            <input class="widefat" id="<?php echo $this->get_field_id('category');?>" name="<?php echo $this->get_field_name('category');?>" type="text" value="<?php echo esc_attr($category);?>">
+
+        </p>
+        <?php
+    }
+    public function update($new_instance,$old_instance){
+        $instance=array();
+        $instance['category']=!empty($new_instance['category'])?sanitize_text_field($new_instance['category']):'';
+
+        return $instance;
+    }
+}
+    function register_books_category_widget(){
+        register_widget('Books_category_Widget');
+    }
+    add_action('widgets_init','register_books_category_widget');
+
+    function register_custom_dashboard_widget(){
+        wp_add_dashboard_widget(
+            'custom_dashboard_widget',
+            'Top Book Categories',
+            'render_custom_dashboard_widget'
+        );
+    }
+
+    add_action('wp_dashboard_setup', 'register_custom_dashboard_widget');
+
+    function render_custom_dashboard_widget(){
+        $category_args=array(
+            'taxonomy'=>'book_category',
+            'orderby'=>'count',
+            'order'=>'DESC',
+            'number'=>5
+        );
+
+        $book_categories=get_categories($category_args);
+
+        if(!empty($book_categories)){
+            echo '<ul>';
+            foreach($book_categories as $category){
+                echo '<li>'.$category->name.'('.$category->count . ')</li>';
+            }
+            echo '</ul>';
+        }else{
+            echo 'No book Categories found.';
+        }
+    }
+
